@@ -129,6 +129,7 @@ class Session(TimestampMixin, Base):
     total_output_tokens = Column(Integer, default=0)
     mode = Column(String, nullable=True)  # 'agent', 'chat', or 'research'
     crew_member_id = Column(String, nullable=True)  # links to crew_members.id
+    workspace_id = Column(String, nullable=True, index=True)  # active code workspace
 
     # Relationship to chat messages
     messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
@@ -157,6 +158,7 @@ class Session(TimestampMixin, Base):
             'total_input_tokens': self.total_input_tokens or 0,
             'total_output_tokens': self.total_output_tokens or 0,
             'crew_member_id': self.crew_member_id,
+            'workspace_id': self.workspace_id,
         }
 
 class ChatMessage(Base):
@@ -1422,6 +1424,22 @@ def _migrate_add_notifications_enabled():
         logging.getLogger(__name__).warning(f"notifications_enabled migration: {e}")
 
 
+def _migrate_add_workspace_id():
+    """Add workspace_id column to sessions for code-workspace binding."""
+    try:
+        with engine.connect() as conn:
+            cols = [r[1] for r in conn.execute(text("PRAGMA table_info(sessions)"))]
+            if "workspace_id" not in cols:
+                conn.execute(text("ALTER TABLE sessions ADD COLUMN workspace_id TEXT"))
+                conn.execute(text(
+                    "CREATE INDEX IF NOT EXISTS ix_sessions_workspace_id ON sessions(workspace_id)"
+                ))
+                conn.commit()
+                logging.getLogger(__name__).info("Added workspace_id column to sessions")
+    except Exception as e:
+        logging.getLogger(__name__).warning(f"workspace_id migration: {e}")
+
+
 def _migrate_add_crew_member_id():
     """Add crew_member_id column to sessions and scheduled_tasks tables if missing."""
     try:
@@ -1660,6 +1678,7 @@ def init_db():
     _migrate_add_notifications_enabled()
     _migrate_drop_ping_notes_tasks()
     _migrate_add_crew_member_id()
+    _migrate_add_workspace_id()
     _migrate_add_assistant_columns()
     _migrate_add_email_smtp_security()
     _migrate_seed_email_account()

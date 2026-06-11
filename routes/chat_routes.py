@@ -1118,6 +1118,18 @@ def setup_chat_routes(
                         _max_rounds = _DEFAULT_ROUNDS
                     _max_rounds = max(1, min(_max_rounds, 200))
 
+                    _workspace_path = None
+                    try:
+                        from services.workspace import get_workspace_manager
+                        _ws_mgr = get_workspace_manager()
+                        _ws_override = (form_data.get("workspace_id") or "").strip()
+                        if _ws_override:
+                            _workspace_path = _ws_mgr.repo_path(_ws_override)
+                        if not _workspace_path:
+                            _workspace_path = _ws_mgr.resolve_for_session(session)
+                    except Exception as _ws_err:
+                        logger.debug("workspace resolve skipped: %s", _ws_err)
+
                     async for chunk in stream_agent_loop(
                         sess.endpoint_url,
                         sess.model,
@@ -1135,7 +1147,7 @@ def setup_chat_routes(
                         tool_policy=tool_policy,
                         owner=_user,
                         fallbacks=_fallback_candidates,
-                        workspace=None,
+                        workspace=_workspace_path,
                         plan_mode=plan_mode,
                         approved_plan=approved_plan or None,
                     ):

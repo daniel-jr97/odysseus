@@ -52,6 +52,7 @@ _COMMON_TOOL_NAMES = {
     "manage_documents",
     "manage_endpoints",
     "manage_mcp",
+    "manage_workspace",
     "manage_memory",
     "manage_notes",
     "manage_research",

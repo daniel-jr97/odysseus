@@ -91,6 +91,7 @@ BUILTIN_TOOL_DESCRIPTIONS: Dict[str, str] = {
     "manage_skills": "Skill management: add, update, publish, or search reusable skills/presets.",
     "manage_tasks": "Scheduled task management: list, create, edit, delete, pause, resume, or run cron tasks.",
     "manage_endpoints": "Endpoint management: list, add, delete, enable, or disable model API endpoints.",
+    "manage_workspace": "Git code workspace management: attach/clone a repo URL, list workspaces, sync (git pull), bind to the current chat, or remove. Use when the user pastes a github/gitlab repo link or asks to work on a codebase.",
     "manage_mcp": "MCP server management: list, add, delete, reconnect servers, or list available tools.",
     "manage_webhooks": "Webhook management: list, add, delete, enable, or disable webhooks.",
     "manage_tokens": "API token management: list, create, or delete API access tokens.",

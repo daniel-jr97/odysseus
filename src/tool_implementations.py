@@ -1237,6 +1237,119 @@ async def do_manage_mcp(content: str, owner: Optional[str] = None) -> Dict:
 
 
 # ---------------------------------------------------------------------------
+# Code workspace management tool
+# ---------------------------------------------------------------------------
+
+async def do_manage_workspace(
+    content: str,
+    owner: Optional[str] = None,
+    session_id: Optional[str] = None,
+) -> Dict:
+    """Attach, list, sync, bind, or remove git-backed code workspaces."""
+    from services.workspace import get_workspace_manager
+
+    try:
+        args = _parse_tool_args(content)
+    except ValueError:
+        return {"error": "Invalid JSON arguments", "exit_code": 1}
+
+    action = (args.get("action") or "list").strip().lower()
+    mgr = get_workspace_manager()
+
+    if action == "list":
+        items = mgr.list()
+        return {
+            "response": f"{len(items)} workspace(s)",
+            "workspaces": items,
+            "exit_code": 0,
+        }
+
+    if action == "get":
+        wid = (args.get("workspace_id") or args.get("id") or "").strip()
+        ws = mgr.get(wid) if wid else None
+        if not ws:
+            return {"error": "workspace_id is required or not found", "exit_code": 1}
+        return {"workspace": ws, "exit_code": 0}
+
+    if action == "attach":
+        url = (args.get("url") or "").strip()
+        if not url:
+            return {"error": "url is required for attach", "exit_code": 1}
+        bind_sid = (args.get("session_id") or session_id or "").strip() or None
+        try:
+            ws = await mgr.attach(
+                url,
+                branch=(args.get("branch") or None),
+                session_id=bind_sid,
+            )
+            return {
+                "response": (
+                    f"Attached workspace '{ws.get('name')}' ({ws.get('id')}). "
+                    f"Repo path: {ws.get('repo_path')}. "
+                    "File and shell tools are now confined to this folder for the bound session."
+                ),
+                "workspace": ws,
+                "repo_path": ws.get("repo_path"),
+                "exit_code": 0,
+            }
+        except ValueError as e:
+            return {"error": str(e), "exit_code": 1}
+        except RuntimeError as e:
+            return {"error": str(e), "exit_code": 1}
+
+    if action == "sync":
+        wid = (args.get("workspace_id") or args.get("id") or "").strip()
+        if not wid:
+            return {"error": "workspace_id is required for sync", "exit_code": 1}
+        try:
+            ws = await mgr.sync(wid)
+            return {"response": f"Synced workspace '{ws.get('name')}'", "workspace": ws, "exit_code": 0}
+        except (ValueError, RuntimeError) as e:
+            return {"error": str(e), "exit_code": 1}
+
+    if action == "bind":
+        wid = (args.get("workspace_id") or args.get("id") or "").strip()
+        bind_sid = (args.get("session_id") or session_id or "").strip()
+        if not wid or not bind_sid:
+            return {"error": "workspace_id and session_id are required for bind", "exit_code": 1}
+        try:
+            ok = mgr.bind_session(wid, bind_sid)
+            if not ok:
+                return {"error": f"session {bind_sid} not found", "exit_code": 1}
+            path = mgr.repo_path(wid)
+            return {
+                "response": f"Bound workspace {wid} to session {bind_sid}",
+                "repo_path": path,
+                "exit_code": 0,
+            }
+        except ValueError as e:
+            return {"error": str(e), "exit_code": 1}
+
+    if action == "unbind":
+        bind_sid = (args.get("session_id") or session_id or "").strip()
+        if not bind_sid:
+            return {"error": "session_id is required for unbind", "exit_code": 1}
+        try:
+            mgr.unbind_session(bind_sid)
+            return {"response": f"Unbound workspace from session {bind_sid}", "exit_code": 0}
+        except ValueError as e:
+            return {"error": str(e), "exit_code": 1}
+
+    if action == "remove":
+        wid = (args.get("workspace_id") or args.get("id") or "").strip()
+        confirm = bool(args.get("confirm"))
+        if not wid:
+            return {"error": "workspace_id is required for remove", "exit_code": 1}
+        try:
+            result = mgr.remove(wid, confirm=confirm)
+            return {**result, "exit_code": 0}
+        except ValueError as e:
+            return {"error": str(e), "exit_code": 1}
+
+    return {"error": f"Unknown action: {action}", "exit_code": 1}
+
+
+# ---------------------------------------------------------------------------
 # Webhook management tool
 # ---------------------------------------------------------------------------
 

@@ -687,6 +687,29 @@ FUNCTION_TOOL_SCHEMAS = [
     {
         "type": "function",
         "function": {
+            "name": "manage_workspace",
+            "description": "Attach and manage git code workspaces. Clone a repo URL so file/shell tools run inside that project folder. Use when the user pastes a git repo URL or asks to work on a codebase.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": ["attach", "list", "get", "sync", "bind", "unbind", "remove"],
+                        "description": "Workspace action",
+                    },
+                    "url": {"type": "string", "description": "Git repo URL (for attach)"},
+                    "branch": {"type": "string", "description": "Optional branch to clone (for attach)"},
+                    "workspace_id": {"type": "string", "description": "Workspace id (for get/sync/bind/remove)"},
+                    "session_id": {"type": "string", "description": "Chat session id to bind (optional; defaults to current chat)"},
+                    "confirm": {"type": "boolean", "description": "Must be true to delete a workspace (for remove)"},
+                },
+                "required": ["action"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "manage_mcp",
             "description": "Manage MCP (Model Context Protocol) tool servers: list servers and their tools, add new servers, delete, enable/disable, reconnect, or list all available tools.",
             "parameters": {
@@ -1371,7 +1394,7 @@ def function_call_to_tool_block(name: str, arguments: str) -> Optional[ToolBlock
         else:
             content = action
     elif tool_type in ("manage_tasks", "manage_skills", "api_call",
-                        "manage_endpoints", "manage_mcp", "manage_webhooks",
+                        "manage_workspace", "manage_endpoints", "manage_mcp", "manage_webhooks",
                         "manage_tokens", "manage_documents", "manage_settings"):
         content = json.dumps(args)
     elif tool_type == "ask_teacher":

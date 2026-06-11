@@ -474,6 +474,7 @@ async def _run_subprocess_streaming(
 
 _ADMIN_TOOLS = {
     "app_api",
+    "manage_workspace",
     "manage_endpoints",
     "manage_mcp",
     "manage_webhooks",
@@ -1133,7 +1134,7 @@ async def execute_tool_block(
         do_create_document, do_update_document, do_edit_document,
         do_suggest_document, do_search_chats, do_manage_tasks,
         do_manage_skills, do_api_call, do_manage_endpoints,
-        do_manage_mcp, do_manage_webhooks, do_manage_tokens,
+        do_manage_mcp, do_manage_workspace, do_manage_webhooks, do_manage_tokens,
         do_manage_documents, do_manage_settings, do_manage_notes,
         do_manage_calendar,
         do_download_model, do_serve_model, do_list_served_models, do_stop_served_model,
@@ -1365,6 +1366,9 @@ async def execute_tool_block(
     elif tool == "manage_mcp":
         desc = "manage_mcp"
         result = await do_manage_mcp(content, owner=owner)
+    elif tool == "manage_workspace":
+        desc = "manage_workspace"
+        result = await do_manage_workspace(content, owner=owner, session_id=session_id)
     elif tool == "manage_webhooks":
         desc = "manage_webhooks"
         result = await do_manage_webhooks(content, owner=owner)

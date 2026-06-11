@@ -257,6 +257,11 @@ _DOMAIN_RULES = {
 - Use file tools for real disk files. Use document tools only for editor documents.
 - Prefer `grep`, `glob`, and `ls` over shell equivalents when available.
 - Use `edit_file`/`write_file` for writes; avoid shell redirection/heredocs for editing files.""",
+    "workspace": """\
+## Code workspace rules
+- When the user pastes a git repo URL or asks to work on a codebase, call `manage_workspace` with `action:attach` and that URL before exploring files.
+- After attach, file/shell tools are confined to the cloned repo folder — explore with `ls`, `grep`, `read_file`; do not ask the user for paths.
+- Reuse an existing workspace via `action:list` + `action:sync` instead of cloning duplicates.""",
     "settings": """\
 ## Settings/API rules
 - Use `manage_settings` for preferences and tool enable/disable.
@@ -273,6 +278,7 @@ _DOMAIN_TOOL_MAP = {
     "ui": {"ui_control"},
     "sessions": {"create_session", "list_sessions", "manage_session", "send_to_session", "search_chats"},
     "files": {"bash", "python", "read_file", "write_file", "edit_file", "grep", "glob", "ls"},
+    "workspace": {"manage_workspace"},
     "settings": {"manage_settings", "manage_endpoints", "manage_mcp", "manage_webhooks", "manage_tokens", "app_api"},
 }
 
@@ -400,6 +406,7 @@ Generate an image. Line 1 = description, line 2 = model name, line 3 = WxH (e.g.
     "manage_skills": "- ```manage_skills``` — Skill registry (SKILL.md format). Args (JSON): {\"action\": \"list|view|view_ref|search|add|edit|patch|publish|delete\", ...}. `list` returns the index of available skills (published + teacher-escalation drafts); `view name=foo` fetches the full SKILL.md; `view_ref name=foo path=...` loads a reference file under the skill directory. For `add`, provide an explicit kebab-case `name` and only report the exact returned name, because storage may normalize or dedupe it. Use this BEFORE doing domain work — there may already be a procedure (published or draft) that prescribes the correct steps. Drafts written by the teacher loop are authoritative guidance even though they're not yet published.",
     "manage_tasks": "- ```manage_tasks``` — Create and manage scheduled background tasks (recurring AI jobs). Args (JSON): {\"action\": \"list|create|edit|delete|pause|resume|run\", ...}",
     "manage_endpoints": "- ```manage_endpoints``` — Add, remove, or configure AI model API endpoints. Args (JSON): {\"action\": \"list|add|delete|enable|disable\", ...}. Use when user wants to add a new AI provider.",
+    "manage_workspace": "- ```manage_workspace``` — Attach a git repo as the active code workspace. Args (JSON): {\"action\": \"attach|list|get|sync|bind|unbind|remove\", \"url\": \"https://github.com/org/repo\", \"branch\": \"main\", \"workspace_id\": \"...\", \"confirm\": true}. On attach, clones the repo and binds it to this chat so read_file/write_file/bash/grep/ls run inside that folder. ALWAYS call attach when the user pastes a repo URL or says \"work on this repo\".",
     "manage_mcp": "- ```manage_mcp``` — Manage MCP (Model Context Protocol) tool servers — external tools that extend your capabilities. Args (JSON): {\"action\": \"list|add|delete|reconnect|list_tools\", ...}",
     "manage_webhooks": "- ```manage_webhooks``` — Configure outgoing webhooks (HTTP notifications on events like chat completion). Args (JSON): {\"action\": \"list|add|delete|enable|disable\", ...}",
     "manage_tokens": "- ```manage_tokens``` — Generate or revoke API access tokens for external integrations. Args (JSON): {\"action\": \"list|create|delete\", ...}",
@@ -606,7 +613,7 @@ _MCP_KEYWORDS = frozenset(["mcp", "browse", "browser", "website", "calendar", "e
                            "gmail", "screenshot", "navigate", "click", "miniflux", "rss", "feed"])
 _ADMIN_SCHEMA_NAMES = frozenset([
     "manage_session", "manage_skills", "manage_tasks",
-    "manage_endpoints", "manage_mcp", "manage_webhooks", "manage_tokens",
+    "manage_workspace", "manage_endpoints", "manage_mcp", "manage_webhooks", "manage_tokens",
     "create_session", "list_sessions", "send_to_session", "pipeline",
     "ask_teacher", "list_models", "search_chats",
 ])
@@ -1234,7 +1241,7 @@ def _build_system_prompt(
 
 _ADMIN_TOOLS = {
     "manage_session", "manage_skills", "manage_tasks",
-    "manage_endpoints", "manage_mcp", "manage_webhooks", "manage_tokens",
+    "manage_workspace", "manage_endpoints", "manage_mcp", "manage_webhooks", "manage_tokens",
     "manage_documents", "manage_settings", "create_session", "list_sessions",
     "send_to_session", "pipeline", "ask_teacher", "list_models",
 }

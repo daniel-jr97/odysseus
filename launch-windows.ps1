@@ -15,7 +15,9 @@
 #>
 param(
     [int]$Port = 7000,
-    [string]$BindHost = "127.0.0.1"
+    [string]$BindHost = "127.0.0.1",
+    # Show every HTTP request line (cookbook/email polling is very chatty).
+    [switch]$AccessLog
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,6 +30,36 @@ function Fail($msg) {
     Write-Host ""
     Read-Host "Press Enter to exit"
     exit 1
+}
+
+function Enable-ConsoleAnsi {
+    # Restore colored uvicorn logs on native Windows (avoids raw ←[32m noise).
+    if (-not ([Environment]::OSVersion.Platform -eq "Win32NT")) { return }
+    try {
+        $sig = @'
+using System;
+using System.Runtime.InteropServices;
+public static class WinConsole {
+    [DllImport("kernel32.dll", SetLastError=true)]
+    public static extern IntPtr GetStdHandle(int nStdHandle);
+    [DllImport("kernel32.dll", SetLastError=true)]
+    public static extern bool GetConsoleMode(IntPtr h, out uint mode);
+    [DllImport("kernel32.dll", SetLastError=true)]
+    public static extern bool SetConsoleMode(IntPtr h, uint mode);
+}
+'@
+        Add-Type -TypeDefinition $sig -ErrorAction Stop
+        $ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+        foreach ($handleId in @(-11, -12)) {
+            $h = [WinConsole]::GetStdHandle($handleId)
+            $mode = [uint32]0
+            if ([WinConsole]::GetConsoleMode($h, [ref]$mode)) {
+                [void][WinConsole]::SetConsoleMode($h, ($mode -bor $ENABLE_VIRTUAL_TERMINAL_PROCESSING))
+            }
+        }
+    } catch {
+        # Non-fatal — logs still work, just without colors.
+    }
 }
 
 function Find-GitBash {
@@ -131,6 +163,18 @@ if (-not (Find-GitBash)) {
 
 # 6. Start the server (use `python -m uvicorn` - bare `uvicorn` may not be on PATH)
 Write-Step ("Starting Odysseus at http://{0}:{1}" -f $BindHost, $Port)
+Enable-ConsoleAnsi
+if (-not $AccessLog) {
+    Write-Host "HTTP access log suppressed (UI polling is chatty). Pass -AccessLog to show every request."
+}
 Write-Host "Press Ctrl+C to stop."
 Write-Host ""
-& $venvPy -m uvicorn app:app --host $BindHost --port $Port
+$uvicornArgs = @(
+    "-m", "uvicorn", "app:app",
+    "--host", $BindHost,
+    "--port", "$Port"
+)
+if (-not $AccessLog) {
+    $uvicornArgs += "--no-access-log"
+}
+& $venvPy @uvicornArgs

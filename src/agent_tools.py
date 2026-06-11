@@ -38,7 +38,7 @@ TOOL_TAGS = {"bash", "python", "web_search", "web_fetch", "read_file", "write_fi
              "ui_control", "generate_image", "ask_user", "update_plan",
              "manage_tasks", "api_call", "ask_teacher", "manage_skills",
              "suggest_document",
-             "manage_endpoints", "manage_mcp", "manage_webhooks",
+             "manage_workspace", "manage_endpoints", "manage_mcp", "manage_webhooks",
              "manage_tokens", "manage_documents", "manage_settings",
              "manage_notes", "manage_calendar",
              "resolve_contact", "manage_contact", "list_email_accounts", "send_email", "list_emails",
