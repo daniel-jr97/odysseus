@@ -114,6 +114,15 @@ def _fake_auth_request(token="session-token"):
     return req
 
 
+def test_session_cookie_name_includes_port(monkeypatch):
+    from routes.auth_routes import session_cookie_name
+
+    monkeypatch.setenv("APP_PORT", "7001")
+    assert session_cookie_name() == "odysseus_session_7001"
+    assert session_cookie_name("7000") == "odysseus_session_7000"
+    assert session_cookie_name("not-a-port") == "odysseus_session_7000"
+
+
 def test_set_signup_enabled_true_is_idempotent():
     from routes.auth_routes import SetOpenRegistrationRequest
 
