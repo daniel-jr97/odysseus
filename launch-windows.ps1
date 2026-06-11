@@ -8,7 +8,11 @@
 
   Usage:
     powershell -ExecutionPolicy Bypass -File .\launch-windows.ps1
+    powershell -ExecutionPolicy Bypass -File .\launch-windows.ps1 -Quick
     powershell -ExecutionPolicy Bypass -File .\launch-windows.ps1 -Port 7000 -BindHost 127.0.0.1
+
+  -Quick  Skip pip install and setup.py (daily startup — use launch-odysseus.ps1
+          or the desktop shortcut). Run the full script after pulling updates.
 
   Tip: bind 127.0.0.1 (default) for local-only use. Use 0.0.0.0 only when you
   intentionally want other devices on your LAN to reach it.
@@ -17,7 +21,9 @@ param(
     [int]$Port = 7000,
     [string]$BindHost = "127.0.0.1",
     # Show every HTTP request line (cookbook/email polling is very chatty).
-    [switch]$AccessLog
+    [switch]$AccessLog,
+    # Skip dependency install + setup.py (already configured installs).
+    [switch]$Quick
 )
 
 $ErrorActionPreference = "Stop"
@@ -82,6 +88,30 @@ function Find-GitBash {
     return $null
 }
 
+$venvPy = Join-Path $PSScriptRoot "venv\Scripts\python.exe"
+$startChroma = Join-Path $PSScriptRoot "scripts\start-chromadb.ps1"
+if (Test-Path $startChroma) {
+    . $startChroma
+    [void](Ensure-ChromaDbRunning -RepoRoot $PSScriptRoot)
+}
+
+if ($Quick) {
+    if (-not (Test-Path $venvPy)) {
+        Fail "venv not found. Run the full launcher once first: .\launch-windows.ps1"
+    }
+    Write-Step ("Starting Odysseus at http://{0}:{1}" -f $BindHost, $Port)
+    Enable-ConsoleAnsi
+    if (-not $AccessLog) {
+        Write-Host "Quick start (skipped pip + setup). Pass -AccessLog for HTTP request logs."
+    }
+    Write-Host "Press Ctrl+C to stop."
+    Write-Host ""
+    $uvicornArgs = @("-m", "uvicorn", "app:app", "--host", $BindHost, "--port", "$Port")
+    if (-not $AccessLog) { $uvicornArgs += "--no-access-log" }
+    & $venvPy @uvicornArgs
+    exit $LASTEXITCODE
+}
+
 # 1. Locate a Python interpreter (3.11+ required)
 Write-Step "Checking for Python"
 function Get-PythonVersionText($launcher, $launcherArgs) {
@@ -132,7 +162,6 @@ $pythonLabel = ("Using Python {0}: {1} {2}" -f $pyVersion, $pyExe, ($pyArgs -joi
 Write-Host $pythonLabel
 
 # 2. Create the virtualenv if missing
-$venvPy = Join-Path $PSScriptRoot "venv\Scripts\python.exe"
 if (-not (Test-Path $venvPy)) {
     Write-Step "Creating virtual environment (venv)"
     & $pyExe @pyArgs -m venv venv
@@ -146,6 +175,14 @@ Write-Step "Installing dependencies (first run can take a few minutes)"
 & $venvPy -m pip install --upgrade pip --quiet
 & $venvPy -m pip install -r requirements.txt
 if ($LASTEXITCODE -ne 0) { Fail "Dependency install failed. Scroll up for the pip error." }
+
+# Native Windows: ChromaDB server CLI (RAG / memory vectors). The app uses
+# chromadb-client over HTTP; the full package provides `chroma run`.
+$chromaCli = Join-Path $PSScriptRoot "venv\Scripts\chroma.exe"
+if (-not (Test-Path $chromaCli)) {
+    Write-Host "Installing ChromaDB server package (for local vector store)..."
+    & $venvPy -m pip install chromadb --quiet
+}
 
 # 4. First-time setup (creates data dirs, DB, .env, admin user)
 Write-Step "Running first-time setup"

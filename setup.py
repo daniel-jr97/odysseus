@@ -13,6 +13,10 @@ import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, BASE_DIR)
+
+from dotenv import load_dotenv
+load_dotenv(os.path.join(BASE_DIR, ".env"), encoding="utf-8-sig")
+
 from src.constants import (
     DATA_DIR, AUTH_FILE, UPLOAD_DIR, WORKSPACES_DIR, PERSONAL_DIR, PERSONAL_UPLOADS_DIR,
     TTS_CACHE_DIR, GENERATED_IMAGES_DIR, DEEP_RESEARCH_DIR, CHROMA_DIR,
