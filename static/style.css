@@ -1,5 +1,5 @@
 /* ============================================ */
-/* Odysseus UI — Consolidated Stylesheet        */
+/* Napzter UI — Consolidated Stylesheet         */
 /* ============================================ */
 
 
@@ -16,12 +16,12 @@
  */
 
 :root {
-  /* Core palette */
-  --bg: #282c34;
-  --fg: #9cdef2;
-  --panel: #111;
-  --border: #355a66;
-  --red: #e06c75;
+  /* Core palette — Napzter default (black + lime green) */
+  --bg: #000000;
+  --fg: #b8ffb8;
+  --panel: #0a0a0a;
+  --border: #1a3a1a;
+  --red: #7CFC00;
   /* Were `var(--green)` / `var(--warn)` — self-referential, so they
      resolved to invalid and every site fell back to its own literal
      (or, for sites with no fallback, painted as transparent/inherit).
@@ -570,6 +570,15 @@ body.bg-pattern-sparkles {
       position: relative;
       top: 0;
       left: -10px;
+    }
+    .sidebar-brand-logo {
+      display: block;
+      height: 28px;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+      object-position: left center;
+      margin-left: -4px;
     }
     .sidebar-sep {
       display: none;
@@ -1868,6 +1877,13 @@ body.bg-pattern-sparkles {
       margin-right: 0.4rem;
       vertical-align: -0.15em;
       color: var(--brand-color, var(--red));
+    }
+    .welcome-logo {
+      display: block;
+      width: min(280px, 78vw);
+      height: auto;
+      margin: 0 auto 10px;
+      object-fit: contain;
     }
     #welcome-screen .welcome-sub {
       font-size:0.85rem;

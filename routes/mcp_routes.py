@@ -482,7 +482,7 @@ def setup_mcp_routes(mcp_manager: McpManager):
         if resolve_pending(state, code):
             return HTMLResponse(_oauth_result_page(
                 "Authorization Successful",
-                "The MCP server is connecting. You can close this window and return to Odysseus.",
+                "The MCP server is connecting. You can close this window and return to Napzter.",
                 success=True,
             ))
         # Legacy Google path: state is the server_id
@@ -508,7 +508,7 @@ def setup_mcp_routes(mcp_manager: McpManager):
         if state and resolve_pending(state, code):
             return HTMLResponse(_oauth_result_page(
                 "Authorization Successful",
-                "The MCP server is connecting. You can close this window and return to Odysseus.",
+                "The MCP server is connecting. You can close this window and return to Napzter.",
                 success=True,
             ))
 
@@ -612,34 +612,34 @@ def _oauth_authorize_page(auth_url: str, server_id: str, host: str) -> str:
     host = html.escape(host, quote=True)
     return f"""<!DOCTYPE html>
 <html><head>
-<meta charset="UTF-8"><title>Authorize — Odysseus</title>
+<meta charset="UTF-8"><title>Authorize — Napzter</title>
 <style>
-  body {{ font-family: 'Fira Code', monospace; background: #0f0f0f; color: #e0e0e0;
+  body {{ font-family: 'Fira Code', monospace; background: #000000; color: #b8ffb8;
     display: flex; justify-content: center; align-items: center; min-height: 100vh; }}
-  .card {{ background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+  .card {{ background: #0a0a0a; border: 1px solid #1a3a1a; border-radius: 12px;
     padding: 2rem; max-width: 480px; text-align: center; }}
-  h2 {{ color: #e06c75; margin-bottom: 0.5rem; font-size: 1.1rem; }}
+  h2 {{ color: #7CFC00; margin-bottom: 0.5rem; font-size: 1.1rem; }}
   p {{ color: #aaa; font-size: 0.82rem; line-height: 1.6; margin: 0.8rem 0; }}
   .step {{ text-align: left; color: #ccc; font-size: 0.82rem; line-height: 1.7; margin: 1rem 0; }}
-  .step b {{ color: #e06c75; }}
+  .step b {{ color: #7CFC00; }}
   a.auth-link {{
     display: inline-block; margin: 1rem 0; padding: 0.6rem 1.5rem;
-    background: #e06c75; color: #fff; text-decoration: none; border-radius: 6px;
+    background: #7CFC00; color: #000; text-decoration: none; border-radius: 6px;
     font-weight: 600; font-size: 0.9rem;
   }}
-  a.auth-link:hover {{ background: #c55; }}
+  a.auth-link:hover {{ background: #66dd00; }}
   input[type=text] {{
     width: 100%; padding: 0.5rem; margin: 0.5rem 0;
-    background: #0f0f0f; border: 1px solid #333; border-radius: 6px;
-    color: #e0e0e0; font-family: 'Fira Code', monospace; font-size: 0.8rem;
+    background: #000000; border: 1px solid #1a3a1a; border-radius: 6px;
+    color: #b8ffb8; font-family: 'Fira Code', monospace; font-size: 0.8rem;
   }}
-  input:focus {{ outline: none; border-color: #e06c75; }}
+  input:focus {{ outline: none; border-color: #7CFC00; }}
   button {{
     padding: 0.5rem 1.5rem; border: none; border-radius: 6px;
-    background: #e06c75; color: #fff; font-weight: 600; cursor: pointer;
+    background: #7CFC00; color: #000; font-weight: 600; cursor: pointer;
     font-family: 'Fira Code', monospace; font-size: 0.85rem; margin-top: 0.3rem;
   }}
-  button:hover {{ background: #c55; }}
+  button:hover {{ background: #66dd00; }}
   .divider {{ border-top: 1px solid #333; margin: 1.2rem 0; }}
 </style></head>
 <body><div class="card">
@@ -664,7 +664,7 @@ def _oauth_result_page(title: str, message: str, success: bool = False) -> str:
     """Generate a simple HTML page for the OAuth result."""
     safe_title = html.escape(title)
     safe_message = html.escape(message)
-    color = "#00661a" if success else "#e06c75"
+    color = "#7CFC00" if success else "#ff6666"
     icon = "&#10003;" if success else "&#10007;"
     return f"""<!DOCTYPE html>
 <html><head>

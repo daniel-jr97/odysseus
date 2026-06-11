@@ -21,6 +21,9 @@ export const THEMES = {
   ume:        { bg:'#2b1b2e', fg:'#f5c2e7', panel:'#1e1420', border:'#6c4675', red:'#f5a0c0' },
   copper:     { bg:'#1c1410', fg:'#e8c39e', panel:'#140f0a', border:'#7a5533', red:'#d4764e' },
   terminal:   { bg:'#000000', fg:'#00ff41', panel:'#0a0a0a', border:'#003b00', red:'#00ff41' },
+  napzter:    { bg:'#000000', fg:'#b8ffb8', panel:'#0a0a0a', border:'#1a3a1a', red:'#7CFC00',
+                advanced: { brandColor: '#7CFC00', sendBtnBg: '#7CFC00', sendBtnHover: '#66dd00',
+                            userBubbleBg: '#0f1f0f', aiBubbleBg: '#0a0a0a', inputBg: '#0f0f0f' } },
   organs:     { bg:'#0a0406', fg:'#efe1c8', panel:'#15080a', border:'#3a1519', red:'#c83240' },
   lavender:   { bg:'#f3eef8', fg:'#3d3551', panel:'#faf7ff', border:'#cec3de', red:'#9b6dcc' },
   gpt:        { bg:'#212121', fg:'#ececec', panel:'#171717', border:'#424242', red:'#949494',
@@ -31,7 +34,7 @@ export const THEMES = {
   cute:       { bg:'#fff0f5', fg:'#d4608a', panel:'#fff8fa', border:'#f0c0d0', red:'#ff6b9d' },
 };
 
-const DEFAULT_THEME = 'dark';
+const DEFAULT_THEME = 'napzter';
 const LS_KEY = 'odysseus-theme';
 const CUSTOM_THEMES_KEY = 'odysseus-custom-themes';
 
@@ -55,6 +58,7 @@ const THEME_DEFAULT_PATTERN = {
   forest:     'petals',
   ocean:      'constellations',
   terminal:   'perlin-flow',
+  napzter:    'none',
   organs:     'rain',
   ume:        'petals',
   cute:       'sparkles',
@@ -72,6 +76,7 @@ const THEME_DEFAULT_EFFECT_COLOR = {
 const THEME_DEFAULT_INTENSITY = {
   midnight:   0.5,
   terminal:   0.8,
+  napzter:    0.8,
   organs:     0.65,
 };
 
@@ -183,7 +188,7 @@ const ADV_KEYS = [
   { key: 'aiBubbleBg',         css: '--ai-bubble-bg',      label: 'AI Chat Bubble',   group: 'Chat Bubbles' },
   { key: 'bubbleBorder',       css: '--bubble-border',     label: 'Border Chat Bubble', group: 'Chat Bubbles' },
   { key: 'sidebarBg',          css: '--sidebar-bg',        label: 'Sidebar Bg',       group: 'Sidebar' },
-  { key: 'brandColor',         css: '--brand-color',       label: 'Odysseus Logo',    group: 'Sidebar' },
+  { key: 'brandColor',         css: '--brand-color',       label: 'Napzter Logo',    group: 'Sidebar' },
   { key: 'hamburgerColor',     css: '--hamburger-color',   label: 'Hamburger Menu',   group: 'Sidebar' },
   { key: 'inputBg',            css: '--input-bg',          label: 'Input Bg',         group: 'Chat Input / Prompt Area' },
   { key: 'inputBorder',        css: '--input-border',      label: 'Input Border',     group: 'Chat Input / Prompt Area' },
@@ -326,24 +331,25 @@ const _ROUTE_FAVICON_SHAPES = {
     "<rect x='21' y='8' width='6' height='19' rx='1' fill='none' stroke='__C__' stroke-width='2.5' transform='rotate(8 24 17)'/>",
 };
 
+const NAPZTER_LOGO = '/static/napzter-logo.png';
+
 function _updateFavicon(fg) {
   const path = (window.location.pathname || '').toLowerCase();
   const routeShape = _ROUTE_FAVICON_SHAPES[path];
-  let svg;
-  if (routeShape) {
-    svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>${routeShape.split('__C__').join(fg)}</svg>`;
-  } else {
-    svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 4L16 22L6 22Z' fill='${fg}'/><path d='M16 8L16 22L24 22Z' fill='${fg}' opacity='0.6'/><path d='M4 24Q10 20 16 24Q22 28 28 24' stroke='${fg}' stroke-width='2.5' fill='none' stroke-linecap='round'/></svg>`;
-  }
-  const href = 'data:image/svg+xml,' + encodeURIComponent(svg);
   let link = document.querySelector("link[rel='icon']");
   if (!link) {
     link = document.createElement('link');
     link.rel = 'icon';
-    link.type = 'image/svg+xml';
     document.head.appendChild(link);
   }
-  link.href = href;
+  if (routeShape) {
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>${routeShape.split('__C__').join(fg)}</svg>`;
+    link.type = 'image/svg+xml';
+    link.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
+  } else {
+    link.type = 'image/png';
+    link.href = NAPZTER_LOGO;
+  }
   let apple = document.querySelector("link[rel='apple-touch-icon']");
   if (!apple) {
     apple = document.createElement('link');
