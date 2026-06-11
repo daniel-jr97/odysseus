@@ -1,6 +1,6 @@
 #Requires -Version 5.1
 <#
-  Create (or refresh) desktop shortcuts for prod and dev Odysseus worktrees.
+  Create (or refresh) desktop shortcuts for prod and dev Napzter worktrees.
 
   Usage:
     powershell -ExecutionPolicy Bypass -File .\scripts\install-desktop-shortcut.ps1
@@ -22,6 +22,14 @@ function Install-OdysseusShortcut {
         throw "$StarterScript not found at $starter"
     }
 
+    $ico = Join-Path $cfg.RepoRoot "static\napzter.ico"
+    if (-not (Test-Path $ico)) {
+        & (Join-Path $PSScriptRoot "build-shortcut-icon.ps1") -RepoRoot $cfg.RepoRoot
+    }
+    if (-not (Test-Path $ico)) {
+        throw "Shortcut icon not found and could not be built: $ico"
+    }
+
     $desktop = [Environment]::GetFolderPath("Desktop")
     $shortcutPath = Join-Path $desktop "$($cfg.Shortcut).lnk"
 
@@ -31,26 +39,34 @@ function Install-OdysseusShortcut {
     $shortcut.Arguments = "-ExecutionPolicy Bypass -File `"$starter`""
     $shortcut.WorkingDirectory = $root
     $shortcut.Description = $cfg.Description
-    $icon = Join-Path $cfg.RepoRoot "static\napzter-logo.png"
-    if (Test-Path $icon) {
-        $shortcut.IconLocation = "$($icon),0"
-    } else {
-        Write-Host "  WARNING: Logo not found at $icon - shortcut keeps its previous icon." -ForegroundColor Yellow
-    }
+    $shortcut.IconLocation = "$($ico),0"
     $shortcut.Save()
 
     Write-Host "Desktop shortcut created: $shortcutPath" -ForegroundColor Green
 }
 
+function Remove-LegacyShortcut {
+    param([string]$Name)
+    $path = Join-Path ([Environment]::GetFolderPath("Desktop")) "$Name.lnk"
+    if (Test-Path $path) {
+        Remove-Item $path -Force
+        Write-Host "Removed legacy shortcut: $path" -ForegroundColor DarkGray
+    }
+}
+
+& (Join-Path $PSScriptRoot "build-shortcut-icon.ps1") -RepoRoot (Get-OdysseusProfile Prod).RepoRoot
+$devRoot = (Get-OdysseusProfile Dev).RepoRoot
+if (Test-Path $devRoot) {
+    & (Join-Path $PSScriptRoot "build-shortcut-icon.ps1") -RepoRoot $devRoot
+}
+
 Install-OdysseusShortcut -ProfileName Prod -StarterScript "start-odysseus-prod.ps1"
 Install-OdysseusShortcut -ProfileName Dev -StarterScript "start-odysseus-dev.ps1"
 
-$legacy = Join-Path ([Environment]::GetFolderPath("Desktop")) "Odysseus.lnk"
-if (Test-Path $legacy) {
-    Remove-Item $legacy -Force
-    Write-Host "Removed legacy shortcut: $legacy" -ForegroundColor DarkGray
+foreach ($legacyName in @("Odysseus", "Odysseus (Prod)", "Odysseus (Dev)")) {
+    Remove-LegacyShortcut -Name $legacyName
 }
 
 Write-Host ""
-Write-Host "Prod -> http://127.0.0.1:$((Get-OdysseusProfile Prod).Port)  (main, E:\Odysseus)"
-Write-Host "Dev  -> http://127.0.0.1:$((Get-OdysseusProfile Dev).Port)  (develop, E:\Odysseus-develop)"
+Write-Host "Napzter AI -> http://127.0.0.1:$((Get-OdysseusProfile Prod).Port)  (main, E:\Odysseus)"
+Write-Host "Napzter Dev -> http://127.0.0.1:$((Get-OdysseusProfile Dev).Port)  (develop, E:\Odysseus-develop)"
