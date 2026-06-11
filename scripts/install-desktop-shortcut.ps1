@@ -31,10 +31,11 @@ function Install-OdysseusShortcut {
     $shortcut.Arguments = "-ExecutionPolicy Bypass -File `"$starter`""
     $shortcut.WorkingDirectory = $root
     $shortcut.Description = $cfg.Description
-    if ($ProfileName -eq "Prod") {
-        $shortcut.IconLocation = "imageres.dll,109"
+    $icon = Join-Path $cfg.RepoRoot "static\napzter-logo.png"
+    if (Test-Path $icon) {
+        $shortcut.IconLocation = "$($icon),0"
     } else {
-        $shortcut.IconLocation = "imageres.dll,168"
+        Write-Host "  WARNING: Logo not found at $icon - shortcut keeps its previous icon." -ForegroundColor Yellow
     }
     $shortcut.Save()
 
