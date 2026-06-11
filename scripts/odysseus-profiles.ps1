@@ -13,6 +13,7 @@ $script:OdysseusProfiles = @{
         DataDir     = Join-Path (Split-Path $OdysseusMainRoot -Parent) "OdysseusData"
         ChromaPort  = 8100
         Shortcut    = "Napzter AI"
+        IconFile    = "static\napzter.ico"
         Description = "Start Napzter production (main branch, port 7000)"
     }
     Dev = [ordered]@{
@@ -23,6 +24,7 @@ $script:OdysseusProfiles = @{
         DataDir     = Join-Path (Split-Path $OdysseusMainRoot -Parent) "OdysseusData-dev"
         ChromaPort  = 8101
         Shortcut    = "Napzter Dev"
+        IconFile    = "static\napzter-dev.ico"
         Description = "Start Napzter staging (develop branch, port 7001)"
     }
 }

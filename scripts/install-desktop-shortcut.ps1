@@ -22,9 +22,10 @@ function Install-OdysseusShortcut {
         throw "$StarterScript not found at $starter"
     }
 
-    $ico = Join-Path $cfg.RepoRoot "static\napzter.ico"
+    $ico = Join-Path $cfg.RepoRoot $cfg.IconFile
     if (-not (Test-Path $ico)) {
-        & (Join-Path $PSScriptRoot "build-shortcut-icon.ps1") -RepoRoot $cfg.RepoRoot
+        $variant = if ($ProfileName -eq "Dev") { "Dev" } else { "Prod" }
+        & (Join-Path $PSScriptRoot "build-shortcut-icon.ps1") -RepoRoot $cfg.RepoRoot -Variant $variant
     }
     if (-not (Test-Path $ico)) {
         throw "Shortcut icon not found and could not be built: $ico"
@@ -54,10 +55,10 @@ function Remove-LegacyShortcut {
     }
 }
 
-& (Join-Path $PSScriptRoot "build-shortcut-icon.ps1") -RepoRoot (Get-OdysseusProfile Prod).RepoRoot
+& (Join-Path $PSScriptRoot "build-shortcut-icon.ps1") -RepoRoot (Get-OdysseusProfile Prod).RepoRoot -Variant Prod
 $devRoot = (Get-OdysseusProfile Dev).RepoRoot
 if (Test-Path $devRoot) {
-    & (Join-Path $PSScriptRoot "build-shortcut-icon.ps1") -RepoRoot $devRoot
+    & (Join-Path $PSScriptRoot "build-shortcut-icon.ps1") -RepoRoot $devRoot -Variant Dev
 }
 
 Install-OdysseusShortcut -ProfileName Prod -StarterScript "start-odysseus-prod.ps1"

@@ -75,6 +75,7 @@ output.txt.txt
 # Shipped Napzter branding assets (tracked in git).
 !static/napzter-logo.png
 !static/napzter.ico
+!static/napzter-dev.ico
 !static/icon-192.png
 !static/icon-512.png
 
