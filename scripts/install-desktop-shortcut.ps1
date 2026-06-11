@@ -1,6 +1,6 @@
 #Requires -Version 5.1
 <#
-  Create (or refresh) a desktop shortcut for Odysseus.
+  Create (or refresh) desktop shortcuts for prod and dev Odysseus worktrees.
 
   Usage:
     powershell -ExecutionPolicy Bypass -File .\scripts\install-desktop-shortcut.ps1
@@ -8,22 +8,48 @@
 $ErrorActionPreference = "Stop"
 
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+. (Join-Path $PSScriptRoot "odysseus-profiles.ps1")
 
-$starter = Join-Path $root "start-odysseus.ps1"
-if (-not (Test-Path $starter)) {
-    throw "start-odysseus.ps1 not found at $starter"
+function Install-OdysseusShortcut {
+    param(
+        [string]$ProfileName,
+        [string]$StarterScript
+    )
+
+    $cfg = Get-OdysseusProfile $ProfileName
+    $starter = Join-Path $root $StarterScript
+    if (-not (Test-Path $starter)) {
+        throw "$StarterScript not found at $starter"
+    }
+
+    $desktop = [Environment]::GetFolderPath("Desktop")
+    $shortcutPath = Join-Path $desktop "$($cfg.Shortcut).lnk"
+
+    $shell = New-Object -ComObject WScript.Shell
+    $shortcut = $shell.CreateShortcut($shortcutPath)
+    $shortcut.TargetPath = "powershell.exe"
+    $shortcut.Arguments = "-ExecutionPolicy Bypass -File `"$starter`""
+    $shortcut.WorkingDirectory = $root
+    $shortcut.Description = $cfg.Description
+    if ($ProfileName -eq "Prod") {
+        $shortcut.IconLocation = "imageres.dll,109"
+    } else {
+        $shortcut.IconLocation = "imageres.dll,168"
+    }
+    $shortcut.Save()
+
+    Write-Host "Desktop shortcut created: $shortcutPath" -ForegroundColor Green
 }
 
-$desktop = [Environment]::GetFolderPath("Desktop")
-$shortcutPath = Join-Path $desktop "Odysseus.lnk"
+Install-OdysseusShortcut -ProfileName Prod -StarterScript "start-odysseus-prod.ps1"
+Install-OdysseusShortcut -ProfileName Dev -StarterScript "start-odysseus-dev.ps1"
 
-$shell = New-Object -ComObject WScript.Shell
-$shortcut = $shell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = "powershell.exe"
-$shortcut.Arguments = "-ExecutionPolicy Bypass -File `"$starter`""
-$shortcut.WorkingDirectory = $root
-$shortcut.Description = "Start Odysseus AI workspace"
-$shortcut.IconLocation = "imageres.dll,109"
-$shortcut.Save()
+$legacy = Join-Path ([Environment]::GetFolderPath("Desktop")) "Odysseus.lnk"
+if (Test-Path $legacy) {
+    Remove-Item $legacy -Force
+    Write-Host "Removed legacy shortcut: $legacy" -ForegroundColor DarkGray
+}
 
-Write-Host "Desktop shortcut created: $shortcutPath" -ForegroundColor Green
+Write-Host ""
+Write-Host "Prod -> http://127.0.0.1:$((Get-OdysseusProfile Prod).Port)  (main, E:\Odysseus)"
+Write-Host "Dev  -> http://127.0.0.1:$((Get-OdysseusProfile Dev).Port)  (develop, E:\Odysseus-develop)"
