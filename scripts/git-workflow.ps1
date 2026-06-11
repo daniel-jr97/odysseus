@@ -73,7 +73,12 @@ switch ($Command) {
         Write-Host "(left=ahead, right=behind)"
         Write-Host ""
         Write-Host "=== develop vs origin/develop ==="
-        git rev-list --left-right --count develop...origin/develop 2>$null
-        Write-Host "(left=ahead, right=behind; remote may not exist yet)"
+        $null = git rev-parse --verify origin/develop 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            git rev-list --left-right --count develop...origin/develop
+            Write-Host "(left=ahead, right=behind)"
+        } else {
+            Write-Host "origin/develop does not exist yet (push develop to create it)."
+        }
     }
 }
