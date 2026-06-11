@@ -48,8 +48,9 @@ def rename_endpoint(monkeypatch):
 
 
 def _request(invalidator):
+    from routes.auth_routes import SESSION_COOKIE
     return SimpleNamespace(
-        cookies={"odysseus_session": "t"},
+        cookies={SESSION_COOKIE: "t"},
         app=SimpleNamespace(state=SimpleNamespace(invalidate_token_cache=invalidator)),
         state=SimpleNamespace(current_user="admin"),
     )
@@ -67,9 +68,10 @@ def test_rename_invalidates_token_cache(rename_endpoint):
 
 def test_no_invalidator_does_not_crash(rename_endpoint):
     import asyncio
+    from routes.auth_routes import SESSION_COOKIE
     endpoint, _am = rename_endpoint
     # app.state without the hook (older wiring) must not break rename.
-    req = SimpleNamespace(cookies={"odysseus_session": "t"},
+    req = SimpleNamespace(cookies={SESSION_COOKIE: "t"},
                           app=SimpleNamespace(state=SimpleNamespace()),
                           state=SimpleNamespace(current_user="admin"))
     res = asyncio.run(endpoint("alice", SimpleNamespace(username="alice2"), req))

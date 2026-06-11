@@ -101,7 +101,7 @@ git push origin main develop
 
 1. Do not commit directly to `main` except via `promote` or hotfix merge.
 2. Test on **Odysseus (Dev)** before promoting to `main`.
-3. Prod and dev can run simultaneously (different ports, data dirs, Chroma ports).
+3. Prod and dev can run simultaneously (different ports, data dirs, Chroma ports, and session cookie names: `odysseus_session_7000` / `odysseus_session_7001`).
 4. Edit staging code in `E:\Odysseus-develop`; edit prod only after promote.
 
 ## Instance settings (per worktree `.env`)

@@ -72,6 +72,7 @@ Trigger phrases: "Napzter dev", "worktree", "desktop shortcut", "launch-windows"
      - Prod: `ODYSSEUS_DATA_DIR=E:\OdysseusData`, `APP_PORT=7000`, `CHROMADB_PORT=8100`
      - Dev: `ODYSSEUS_DATA_DIR=E:\OdysseusData-dev`, `APP_PORT=7001`, `CHROMADB_PORT=8101`
    - Auth is **separate per instance** (`E:\OdysseusData\auth.json` vs `E:\OdysseusData-dev\auth.json`)
+   - Session cookies are **per port** (`odysseus_session_7000` vs `odysseus_session_7001` from `APP_PORT`) so prod and dev can stay logged in at the same time in one browser
 
 7. **Git commits on both worktrees**
    - `E:\Odysseus-develop` → branch `develop`
@@ -94,6 +95,7 @@ Trigger phrases: "Napzter dev", "worktree", "desktop shortcut", "launch-windows"
 - PNG shortcut icons — Windows shows a generic icon; build `napzter.ico` / `napzter-dev.ico` instead
 - Editing prod (`E:\Odysseus`) before testing on dev — breaks the staging-first rule
 - Assuming prod and dev share login credentials — they use separate `auth.json` files
+- Running prod + dev in one browser without per-port session cookies — both instances used to share `odysseus_session` and log each other out; cookie name now includes `APP_PORT`
 - Replacing `ODYSSEUS_*` env var names in integration docs — breaks Codex/Claude agent setup commands
 - Forgetting to run `install-desktop-shortcut.ps1` after icon/name changes — desktop won't update until script runs
 

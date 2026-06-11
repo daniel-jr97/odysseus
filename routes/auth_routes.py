@@ -70,7 +70,20 @@ class RenameUserRequest(BaseModel):
 class SetOpenRegistrationRequest(BaseModel):
     enabled: bool
 
-SESSION_COOKIE = "odysseus_session"
+
+def session_cookie_name(port: Optional[str] = None) -> str:
+    """Per-instance cookie so prod (:7000) and dev (:7001) can stay logged in together."""
+    raw = (port if port is not None else os.getenv("APP_PORT", "7000")).strip()
+    try:
+        p = int(raw)
+        if p < 1 or p > 65535:
+            raise ValueError
+        return f"odysseus_session_{p}"
+    except ValueError:
+        return "odysseus_session_7000"
+
+
+SESSION_COOKIE = session_cookie_name()
 
 
 def setup_auth_routes(auth_manager: AuthManager) -> APIRouter:
