@@ -15,6 +15,8 @@ param(
 )
 
 $launch = Join-Path $PSScriptRoot "launch-windows.ps1"
-$args = @("-Quick", "-Port", "$Port", "-BindHost", $BindHost)
-if ($AccessLog) { $args += "-AccessLog" }
-& $launch @args
+if ($AccessLog) {
+    & $launch -Quick -Port $Port -BindHost $BindHost -AccessLog
+} else {
+    & $launch -Quick -Port $Port -BindHost $BindHost
+}
