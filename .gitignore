@@ -74,6 +74,7 @@ output.txt.txt
 !docs/**/*.webp
 # Shipped Napzter branding assets (tracked in git).
 !static/napzter-logo.png
+!static/napzter.ico
 !static/icon-192.png
 !static/icon-512.png
 

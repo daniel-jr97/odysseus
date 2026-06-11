@@ -12,8 +12,8 @@ $script:OdysseusProfiles = @{
         Port        = 7000
         DataDir     = Join-Path (Split-Path $OdysseusMainRoot -Parent) "OdysseusData"
         ChromaPort  = 8100
-        Shortcut    = "Odysseus (Prod)"
-        Description = "Start Odysseus stable (main branch, port 7000)"
+        Shortcut    = "Napzter AI"
+        Description = "Start Napzter production (main branch, port 7000)"
     }
     Dev = [ordered]@{
         Label       = "Development"
@@ -22,8 +22,8 @@ $script:OdysseusProfiles = @{
         Port        = 7001
         DataDir     = Join-Path (Split-Path $OdysseusMainRoot -Parent) "OdysseusData-dev"
         ChromaPort  = 8101
-        Shortcut    = "Odysseus (Dev)"
-        Description = "Start Odysseus staging (develop branch, port 7001)"
+        Shortcut    = "Napzter Dev"
+        Description = "Start Napzter staging (develop branch, port 7001)"
     }
 }
 
